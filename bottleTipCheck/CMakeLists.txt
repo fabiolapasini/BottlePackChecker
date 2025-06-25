@@ -1,8 +1,9 @@
 # Add source to this project's executable.
 add_executable (BottleTipCheck  
     "main.cpp" 
-    "include/paths.h"
     "src/utils.cpp"
+    "src/paths.cpp"
+    "src/checkBottleCap.cpp"
 )
 
 

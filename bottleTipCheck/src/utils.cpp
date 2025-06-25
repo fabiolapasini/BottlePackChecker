@@ -5,6 +5,30 @@
 #include "../include/utils.h"
 
 
+// LOGGER
+
+using namespace log4cxx;
+using namespace log4cxx::helpers;
+
+log4cxx::LoggerPtr initLogger(const std::string &loggerName) 
+{
+  log4cxx::LoggerPtr logger(Logger::getLogger(loggerName));
+  log4cxx::LayoutPtr layout(new PatternLayout("%d [%t] %-5p %c - %m%n"));
+
+  AppenderPtr consoleAppender(
+      new ConsoleAppender(layout, ConsoleAppender::getSystemOut()));
+
+  BasicConfigurator::resetConfiguration();
+  Logger::getRootLogger()->addAppender(consoleAppender);
+
+  return logger;
+}
+
+
+// SERIALIZATION
+
+using json = nlohmann::json;
+
 // conversion functions for FilesInfo
 void to_json(json &j, const FilesInfo &mpi) {
   j = json{{"InputName",

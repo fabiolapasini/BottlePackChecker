@@ -43,3 +43,11 @@ struct Configuration
 };
 void to_json(json &j, const Configuration &config);
 void from_json(const json &j, Configuration &config);
+
+
+log4cxx::LoggerPtr initLogger(const std::string &loggerName = "MyAppLogger");
+
+struct AppState {
+  log4cxx::LoggerPtr logger;
+  Configuration config;
+};
