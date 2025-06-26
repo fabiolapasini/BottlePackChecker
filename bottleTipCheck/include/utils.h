@@ -1,51 +1,89 @@
 #pragma once
 
-#include <log4cxx/asyncappender.h>
-#include <log4cxx/basicconfigurator.h>
-#include <log4cxx/consoleappender.h>
-#include <log4cxx/helpers/pool.h>
-#include <log4cxx/logmanager.h>
-#include <log4cxx/patternlayout.h>
-#include <log4cxx/propertyconfigurator.h>
+#include <log4cxx/logger.h>
 
 #include <nlohmann/json.hpp>
 #include <string>
-#include <optional> 
 
 using json = nlohmann::json;
 
+// === DATA STRUCTURES ===
 
-struct FoldersInfo 
-{
+struct FoldersInfo {
   std::string InputFiles;
-  std::string LogosFiles;
+  std::string LogoFiles;
   std::string OutputFiles;
+  std::string PCLFiles;
+  std::string DepthImageName;
 };
-void to_json(json &j, const FoldersInfo &fi);
-void from_json(const json &j, FoldersInfo &fi);
 
-/*
-* NOTE: Optional: if the name is missing, I take the whole folder.
-*/
-struct FilesInfo 
-{
-  std::optional<std::string> InputName;
+struct FilesInfo {
+  std::string InputName;
   std::string OutputName;
 };
-void to_json(json &j, const FilesInfo &mpi);
-void from_json(const json &j, FilesInfo &mpi);
 
-
-struct Configuration 
-{
-  FilesInfo filesInfo;
-  FoldersInfo foldersInfo;
+struct Thresholds {
+  double ThresholdZ;
+  double ReprojectionThreshold;
+  double Scale;
+  double RotationKernel;
 };
-void to_json(json &j, const Configuration &config);
-void from_json(const json &j, Configuration &config);
+
+struct CameraParameters {
+  double fx;
+  double fy;
+  double u0;
+  double v0;
+  double dz;
+};
+
+struct ROI {
+  int start_r;
+  int start_c;
+  int w_depth;
+  int h_depth;
+};
+
+struct AffineSettings {
+  bool useAffine;
+};
+
+struct Configuration {
+  FoldersInfo foldersInfo;
+  FilesInfo filesInfo;
+  Thresholds thresholds;
+  CameraParameters camera;
+  ROI roi;
+  AffineSettings affine;
+};
+
+// === JSON SERIALIZATION DECLARATIONS ===
+
+void to_json(json& j, const FoldersInfo& p);
+void from_json(const json& j, FoldersInfo& p);
+
+void to_json(json& j, const FilesInfo& p);
+void from_json(const json& j, FilesInfo& p);
+
+void to_json(json& j, const Thresholds& t);
+void from_json(const json& j, Thresholds& t);
+
+void to_json(json& j, const CameraParameters& c);
+void from_json(const json& j, CameraParameters& c);
+
+void to_json(json& j, const ROI& r);
+void from_json(const json& j, ROI& r);
+
+void to_json(json& j, const AffineSettings& a);
+void from_json(const json& j, AffineSettings& a);
+
+void to_json(json& j, const Configuration& c);
+void from_json(const json& j, Configuration& c);
 
 
-log4cxx::LoggerPtr initLogger(const std::string &loggerName = "MyAppLogger");
+// === LOGGER ===
+
+log4cxx::LoggerPtr initLogger(const std::string& loggerName = "MyAppLogger");
 
 struct AppState {
   log4cxx::LoggerPtr logger;

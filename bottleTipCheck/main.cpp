@@ -2,20 +2,18 @@
 #include <iostream>
 #include <string>
 
+#include "include/checkBottleCap.h"
 #include "include/paths.h"
 #include "include/utils.h"
-#include "include/checkBottleCap.h"
 
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-
 int main(int argc, char** argv) {
-
-    AppState state;
+  AppState state;
 
   // Configure Logger
-    state.logger = initLogger("MyTeststate.logger");
+  state.logger = initLogger("MyTeststate.logger");
 
   // Read configs
   std::filesystem::path config_json_file = Paths::assets_path / "config.json";
@@ -41,21 +39,34 @@ int main(int argc, char** argv) {
   }
 
   LOG4CXX_INFO(state.logger,
-               "FoldersInfo - InputFiles: "
-                   << state.config.foldersInfo.InputFiles
-          << " IntermediateFiles: " << state.config.foldersInfo.LogosFiles
-          << " OutputFiles: " << state.config.foldersInfo.OutputFiles);
-
-  if (state.config.filesInfo.InputName.has_value()) {
-    LOG4CXX_INFO(state.logger, "FilesInfo - InputName: "
-                     << *state.config.filesInfo.InputName
-                                           << " OutputName: "
-                                           << state.config.filesInfo.OutputName);
-  } else {
-    LOG4CXX_INFO(state.logger, "FilesInfo - InputName: <none>"
-                                   << " OutputName: "
-                                   << state.config.filesInfo.OutputName);
-  }
+      "FoldersInfo:\n"
+      "  InputFiles: " << state.config.foldersInfo.InputFiles << "\n"
+      "  LogoFiles: " << state.config.foldersInfo.LogoFiles << "\n"
+      "  OutputFiles: " << state.config.foldersInfo.OutputFiles << "\n"
+      "  PCLFiles: " << state.config.foldersInfo.PCLFiles << "\n"
+      "  DepthImageName: " << state.config.foldersInfo.DepthImageName << "\n"
+      "FilesInfo:\n"
+      "  InputName: " << state.config.filesInfo.InputName << "\n"
+      "  OutputName: " << state.config.filesInfo.OutputName << "\n"
+      "Thresholds:\n"
+      "  ThresholdZ: " << state.config.thresholds.ThresholdZ << "\n"
+      "  ReprojectionThreshold: " << state.config.thresholds.ReprojectionThreshold << "\n"
+      "  Scale: " << state.config.thresholds.Scale << "\n"
+      "  RotationKernel: " << state.config.thresholds.RotationKernel << "\n"
+      "CameraParameters:\n"
+      "  FX: " << state.config.camera.fx << "\n"
+      "  FY: " << state.config.camera.fy << "\n"
+      "  U0: " << state.config.camera.u0 << "\n"
+      "  V0: " << state.config.camera.v0 << "\n"
+      "  DZ: " << state.config.camera.dz << "\n"
+      "RegionOfInterest:\n"
+      "  StartRow: " << state.config.roi.start_r << "\n"
+      "  StartCol: " << state.config.roi.start_c << "\n"
+      "  WidthDepth: " << state.config.roi.w_depth << "\n"
+      "  HeightDepth: " << state.config.roi.h_depth << "\n"
+      "AffineSettings:\n"
+      "  UseAffine: " << (state.config.affine.useAffine ? "true" : "false")
+  );
 
   try {
     QualityChecker::checkLogo(state);
@@ -64,7 +75,6 @@ int main(int argc, char** argv) {
   } catch (...) {
     std::cerr << "Unknown Error" << std::endl;
   }
-
 
   return 0;
 }

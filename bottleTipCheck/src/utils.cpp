@@ -1,20 +1,17 @@
-#include <filesystem>
-#include <fstream>
-#include <sstream>
-
 #include "../include/utils.h"
 
-
-// LOGGER
+#include <log4cxx/basicconfigurator.h>
+#include <log4cxx/consoleappender.h>
+#include <log4cxx/patternlayout.h>
 
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-log4cxx::LoggerPtr initLogger(const std::string &loggerName) 
-{
-  log4cxx::LoggerPtr logger(Logger::getLogger(loggerName));
-  log4cxx::LayoutPtr layout(new PatternLayout("%d [%t] %-5p %c - %m%n"));
+// === LOGGER IMPLEMENTATION ===
 
+log4cxx::LoggerPtr initLogger(const std::string& loggerName) {
+  LoggerPtr logger(Logger::getLogger(loggerName));
+  LayoutPtr layout(new PatternLayout("%d [%t] %-5p %c - %m%n"));
   AppenderPtr consoleAppender(
       new ConsoleAppender(layout, ConsoleAppender::getSystemOut()));
 
@@ -24,47 +21,104 @@ log4cxx::LoggerPtr initLogger(const std::string &loggerName)
   return logger;
 }
 
+// === JSON SERIALIZATION  ===
 
-// SERIALIZATION
-
-using json = nlohmann::json;
-
-// conversion functions for FilesInfo
-void to_json(json &j, const FilesInfo &mpi) {
-  j = json{{"InputName",
-            mpi.InputName.has_value() ? json(*mpi.InputName) : json(nullptr)},
-           {"OutputName", mpi.OutputName}};
+// FoldersInfo
+void to_json(json& j, const FoldersInfo& p) {
+  j = json{{"InputFiles", p.InputFiles},
+           {"LogoFiles", p.LogoFiles},
+           {"OutputFiles", p.OutputFiles},
+           {"PCLFiles", p.PCLFiles},
+           {"DepthImageName", p.DepthImageName}};
 }
 
-void from_json(const json &j, FilesInfo &mpi) {
-  if (j.contains("InputName") && !j["InputName"].is_null())
-    mpi.InputName = j["InputName"].get<std::string>();
-  else
-    mpi.InputName = std::nullopt;
-
-  j.at("OutputName").get_to(mpi.OutputName);
+void from_json(const json& j, FoldersInfo& p) {
+  j.at("InputFiles").get_to(p.InputFiles);
+  j.at("LogoFiles").get_to(p.LogoFiles);
+  j.at("OutputFiles").get_to(p.OutputFiles);
+  j.at("PCLFiles").get_to(p.PCLFiles);
+  j.at("DepthImageName").get_to(p.DepthImageName);
 }
 
-// conversion functions for FoldersInfo
-void to_json(json &j, const FoldersInfo &fi) {
-  j = json{{"InputFiles", fi.InputFiles},
-           {"LogoFiles", fi.LogosFiles},
-           {"OutputFiles", fi.OutputFiles}};
+// FilesInfo
+void to_json(json& j, const FilesInfo& p) {
+  j = json{{"InputName", p.InputName}, {"OutputName", p.OutputName}};
 }
 
-void from_json(const json &j, FoldersInfo &fi) {
-  j.at("InputFiles").get_to(fi.InputFiles);
-  j.at("LogoFiles").get_to(fi.LogosFiles);
-  j.at("OutputFiles").get_to(fi.OutputFiles);
+void from_json(const json& j, FilesInfo& p) {
+  j.at("InputName").get_to(p.InputName);
+  j.at("OutputName").get_to(p.OutputName);
 }
 
-// conversion functions for Configuration
-void to_json(json &j, const Configuration &config) {
-  j = json{{"FilesInfo", config.filesInfo},
-           {"FoldersInfo", config.foldersInfo}};
+// Thresholds
+void to_json(json& j, const Thresholds& t) {
+  j = json{{"ThresholdZ", t.ThresholdZ},
+           {"ReprojectionThreshold", t.ReprojectionThreshold},
+           {"Scale", t.Scale},
+           {"RotationKernel", t.RotationKernel}};
 }
 
-void from_json(const json &j, Configuration &config) {
-  j.at("FilesInfo").get_to(config.filesInfo);
-  j.at("FoldersInfo").get_to(config.foldersInfo);
+void from_json(const json& j, Thresholds& t) {
+  j.at("ThresholdZ").get_to(t.ThresholdZ);
+  j.at("ReprojectionThreshold").get_to(t.ReprojectionThreshold);
+  j.at("Scale").get_to(t.Scale);
+  j.at("RotationKernel").get_to(t.RotationKernel);
+}
+
+// CameraParameters
+void to_json(json& j, const CameraParameters& c) {
+  j = json{
+      {"FX", c.fx}, {"FY", c.fy}, {"U0", c.u0}, {"V0", c.v0}, {"DZ", c.dz}};
+}
+
+void from_json(const json& j, CameraParameters& c) {
+  j.at("FX").get_to(c.fx);
+  j.at("FY").get_to(c.fy);
+  j.at("U0").get_to(c.u0);
+  j.at("V0").get_to(c.v0);
+  j.at("DZ").get_to(c.dz);
+}
+
+// ROI
+void to_json(json& j, const ROI& r) {
+  j = json{{"StartRow", r.start_r},
+           {"StartCol", r.start_c},
+           {"WidthDepth", r.w_depth},
+           {"HeightDepth", r.h_depth}};
+}
+
+void from_json(const json& j, ROI& r) {
+  j.at("StartRow").get_to(r.start_r);
+  j.at("StartCol").get_to(r.start_c);
+  j.at("WidthDepth").get_to(r.w_depth);
+  j.at("HeightDepth").get_to(r.h_depth);
+}
+
+// AffineSettings
+void to_json(json& j, const AffineSettings& a) {
+  j = json{{"UseAffine", a.useAffine}};
+}
+
+void from_json(const json& j, AffineSettings& a) {
+  j.at("UseAffine").get_to(a.useAffine);
+}
+
+// Configuration
+void to_json(json& j, const Configuration& c) {
+  j = json{
+      {"FoldersInfo", c.foldersInfo}, 
+      {"FilesInfo", c.filesInfo},
+      {"Thresholds", c.thresholds},   
+      {"Camera", c.camera},
+      {"RegionOfInterest", c.roi},    
+      {"AffineSettings", c.affine}};
+}
+
+void from_json(const json& j, Configuration& c) {
+  j.at("FoldersInfo").get_to(c.foldersInfo);
+  j.at("FilesInfo").get_to(c.filesInfo);
+  j.at("Thresholds").get_to(c.thresholds);
+  j.at("Camera").get_to(c.camera);
+  j.at("RegionOfInterest").get_to(c.roi);
+  j.at("AffineSettings").get_to(c.affine);
 }
