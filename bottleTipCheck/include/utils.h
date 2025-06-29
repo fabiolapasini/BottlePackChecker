@@ -9,16 +9,9 @@ using json = nlohmann::json;
 
 // === DATA STRUCTURES ===
 
-struct FoldersInfo {
-  std::string InputFiles;
-  std::string LogoFiles;
-  std::string OutputFiles;
-  std::string PCLFiles;
-  std::string DepthImageName;
-};
-
 struct FilesInfo {
   std::string InputName;
+  std::string DepthName;
   std::string OutputName;
 };
 
@@ -49,7 +42,6 @@ struct AffineSettings {
 };
 
 struct Configuration {
-  FoldersInfo foldersInfo;
   FilesInfo filesInfo;
   Thresholds thresholds;
   CameraParameters camera;
@@ -58,9 +50,6 @@ struct Configuration {
 };
 
 // === JSON SERIALIZATION DECLARATIONS ===
-
-void to_json(json& j, const FoldersInfo& p);
-void from_json(const json& j, FoldersInfo& p);
 
 void to_json(json& j, const FilesInfo& p);
 void from_json(const json& j, FilesInfo& p);

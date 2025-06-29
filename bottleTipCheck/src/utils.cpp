@@ -23,30 +23,16 @@ log4cxx::LoggerPtr initLogger(const std::string& loggerName) {
 
 // === JSON SERIALIZATION  ===
 
-// FoldersInfo
-void to_json(json& j, const FoldersInfo& p) {
-  j = json{{"InputFiles", p.InputFiles},
-           {"LogoFiles", p.LogoFiles},
-           {"OutputFiles", p.OutputFiles},
-           {"PCLFiles", p.PCLFiles},
-           {"DepthImageName", p.DepthImageName}};
-}
-
-void from_json(const json& j, FoldersInfo& p) {
-  j.at("InputFiles").get_to(p.InputFiles);
-  j.at("LogoFiles").get_to(p.LogoFiles);
-  j.at("OutputFiles").get_to(p.OutputFiles);
-  j.at("PCLFiles").get_to(p.PCLFiles);
-  j.at("DepthImageName").get_to(p.DepthImageName);
-}
-
 // FilesInfo
 void to_json(json& j, const FilesInfo& p) {
-  j = json{{"InputName", p.InputName}, {"OutputName", p.OutputName}};
+  j = json{{"InputName", p.InputName}, 
+      {"DepthName", p.DepthName},
+    {"OutputName", p.OutputName}};
 }
 
 void from_json(const json& j, FilesInfo& p) {
   j.at("InputName").get_to(p.InputName);
+  j.at("DepthName").get_to(p.DepthName);
   j.at("OutputName").get_to(p.OutputName);
 }
 
@@ -106,7 +92,6 @@ void from_json(const json& j, AffineSettings& a) {
 // Configuration
 void to_json(json& j, const Configuration& c) {
   j = json{
-      {"FoldersInfo", c.foldersInfo}, 
       {"FilesInfo", c.filesInfo},
       {"Thresholds", c.thresholds},   
       {"Camera", c.camera},
@@ -115,7 +100,6 @@ void to_json(json& j, const Configuration& c) {
 }
 
 void from_json(const json& j, Configuration& c) {
-  j.at("FoldersInfo").get_to(c.foldersInfo);
   j.at("FilesInfo").get_to(c.filesInfo);
   j.at("Thresholds").get_to(c.thresholds);
   j.at("Camera").get_to(c.camera);

@@ -6,9 +6,12 @@ add_executable(BottleTipCheck
     "src/checkBottleCap.cpp"
 )
 
+# OpenCV
+# set(OpenCV_DIR "${VCPKG_INSTALLED_DIR}/x64-windows/share/opencv4")
+find_package(OpenCV REQUIRED)
+
 # Find packages
 find_package(fmt CONFIG REQUIRED)
-find_package(OpenCV REQUIRED)
 find_package(PCL CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(log4cxx REQUIRED)
