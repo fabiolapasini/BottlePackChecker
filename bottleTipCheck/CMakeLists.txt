@@ -4,7 +4,8 @@ add_executable(BottleTipCheck
     "src/utils.cpp"
     "src/paths.cpp"
     "src/checkBottleCap.cpp"
-)
+    "src/SurfDetector.cpp"
+ "include/IDetector.h" "include/constants.h")
 
 # OpenCV
 # set(OpenCV_DIR "${VCPKG_INSTALLED_DIR}/x64-windows/share/opencv4")

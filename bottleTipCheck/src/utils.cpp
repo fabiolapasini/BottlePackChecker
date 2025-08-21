@@ -7,33 +7,37 @@
 using namespace log4cxx;
 using namespace log4cxx::helpers;
 
-// === LOGGER IMPLEMENTATION ===
+void showImagesWithWindows(const std::vector<std::string>& windowNames,
+                           const std::vector<cv::Mat>& images,
+                           int waitKeyDelay) {
+  if (windowNames.size() != images.size()) return;
 
-log4cxx::LoggerPtr initLogger(const std::string& loggerName) {
-  LoggerPtr logger(Logger::getLogger(loggerName));
-  LayoutPtr layout(new PatternLayout("%d [%t] %-5p %c - %m%n"));
-  AppenderPtr consoleAppender(
-      new ConsoleAppender(layout, ConsoleAppender::getSystemOut()));
+  for (size_t i = 0; i < images.size(); ++i) {
+    cv::imshow(windowNames[i], images[i]);
+  }
 
-  BasicConfigurator::resetConfiguration();
-  Logger::getRootLogger()->addAppender(consoleAppender);
+  cv::waitKey(waitKeyDelay);
 
-  return logger;
+  for (const auto& name : windowNames) {
+    cv::destroyWindow(name);
+  }
 }
 
 // === JSON SERIALIZATION  ===
 
 // FilesInfo
 void to_json(json& j, const FilesInfo& p) {
-  j = json{{"InputName", p.InputName}, 
-      {"DepthName", p.DepthName},
-    {"OutputName", p.OutputName}};
+  j = json{{"InputName", p.InputName},
+           {"DepthName", p.DepthName},
+           {"OutputName", p.OutputName},
+           {"LogoName", p.LogoName}};
 }
 
 void from_json(const json& j, FilesInfo& p) {
   j.at("InputName").get_to(p.InputName);
   j.at("DepthName").get_to(p.DepthName);
   j.at("OutputName").get_to(p.OutputName);
+  j.at("LogoName").get_to(p.LogoName);
 }
 
 // Thresholds
@@ -91,12 +95,11 @@ void from_json(const json& j, AffineSettings& a) {
 
 // Configuration
 void to_json(json& j, const Configuration& c) {
-  j = json{
-      {"FilesInfo", c.filesInfo},
-      {"Thresholds", c.thresholds},   
-      {"Camera", c.camera},
-      {"RegionOfInterest", c.roi},    
-      {"AffineSettings", c.affine}};
+  j = json{{"FilesInfo", c.filesInfo},
+           {"Thresholds", c.thresholds},
+           {"Camera", c.camera},
+           {"RegionOfInterest", c.roi},
+           {"AffineSettings", c.affine}};
 }
 
 void from_json(const json& j, Configuration& c) {
@@ -105,4 +108,18 @@ void from_json(const json& j, Configuration& c) {
   j.at("Camera").get_to(c.camera);
   j.at("RegionOfInterest").get_to(c.roi);
   j.at("AffineSettings").get_to(c.affine);
+}
+
+// === LOGGER IMPLEMENTATION ===
+
+log4cxx::LoggerPtr initLogger(const std::string& loggerName) {
+  LoggerPtr logger(Logger::getLogger(loggerName));
+  LayoutPtr layout(new PatternLayout("%d [%t] %-5p %c - %m%n"));
+  AppenderPtr consoleAppender(
+      new ConsoleAppender(layout, ConsoleAppender::getSystemOut()));
+
+  BasicConfigurator::resetConfiguration();
+  Logger::getRootLogger()->addAppender(consoleAppender);
+
+  return logger;
 }

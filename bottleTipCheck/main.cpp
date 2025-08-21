@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 
+#include "include/SurfDetector.h"
 #include "include/checkBottleCap.h"
 #include "include/paths.h"
 #include "include/utils.h"
@@ -10,36 +11,35 @@ using namespace log4cxx;
 using namespace log4cxx::helpers;
 
 int main(int argc, char** argv) {
-	AppState state;
+  AppState state;
 
-	// Configure Logger
-	state.logger = initLogger("MyTeststate.logger");
+  // Configure Logger
+  state.logger = initLogger("MyTeststate.logger");
 
-	// Read configs
-	std::filesystem::path config_json_file = Paths::assets_path / "config.json";
-	if (!std::filesystem::exists(config_json_file)) {
-		LOG4CXX_ERROR(state.logger,
-			"config.json does not exist: " << config_json_file.string());
-		return 1;
-	}
-	std::ifstream file(config_json_file);
-	if (!file.is_open()) {
-		LOG4CXX_ERROR(state.logger, "Impossible to open config.json");
-		return 1;
-	}
+  // Read configs
+  std::filesystem::path config_json_file = Paths::assets_path / "config.json";
+  if (!std::filesystem::exists(config_json_file)) {
+    LOG4CXX_ERROR(state.logger,
+                  "config.json does not exist: " << config_json_file.string());
+    return 1;
+  }
+  std::ifstream file(config_json_file);
+  if (!file.is_open()) {
+    LOG4CXX_ERROR(state.logger, "Impossible to open config.json");
+    return 1;
+  }
 
-	json j;
-	file >> j;
-	state.config = Configuration();
-	try {
-		state.config = j.get<Configuration>();
-	}
-	catch (const json::exception& e) {
-		LOG4CXX_ERROR(state.logger, "Error during JSON parsing: " << e.what());
-		return 1;
-	}
+  json j;
+  file >> j;
+  state.config = Configuration();
+  try {
+    state.config = j.get<Configuration>();
+  } catch (const json::exception& e) {
+    LOG4CXX_ERROR(state.logger, "Error during JSON parsing: " << e.what());
+    return 1;
+  }
 
-	LOG4CXX_INFO(state.logger,
+  LOG4CXX_INFO(state.logger,
 		"FoldersInfo:\n"
 		"  InputFiles: "<< Paths::image_path<< "\n"
 		"  LogoFiles: "<< Paths::logo_path<< "\n"
@@ -69,15 +69,16 @@ int main(int argc, char** argv) {
 		"  UseAffine: " << (state.config.affine.useAffine ? "true" : "false")
 	);
 
-	try {
-		QualityChecker::checkLogo(state);
-	}
-	catch (const std::exception& e) {
-		std::cerr << "Error: " << e.what() << std::endl;
-	}
-	catch (...) {
-		std::cerr << "Unknown Error" << std::endl;
-	}
+  std::unique_ptr<IDetector> detector =
+      std::make_unique<SurfDetector>(state.config.affine.useAffine);
 
-	return 0;
+  try {
+    QualityChecker::checkLogo(state, *detector);
+  } catch (const std::exception& e) {
+    LOG4CXX_ERROR(state.logger, "Error: " << e.what());
+  } catch (...) {
+    LOG4CXX_ERROR(state.logger, "Unknown Error");
+  }
+
+  return 0;
 }

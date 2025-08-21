@@ -3,9 +3,17 @@
 #include <log4cxx/logger.h>
 
 #include <nlohmann/json.hpp>
+#include <opencv2/opencv.hpp>
 #include <string>
+#include <vector>
 
 using json = nlohmann::json;
+
+// === FUNCTIONS ===
+
+void showImagesWithWindows(const std::vector<std::string>& windowNames,
+                           const std::vector<cv::Mat>& images,
+                           int waitKeyDelay = 0);
 
 // === DATA STRUCTURES ===
 
@@ -13,6 +21,7 @@ struct FilesInfo {
   std::string InputName;
   std::string DepthName;
   std::string OutputName;
+  std::string LogoName;
 };
 
 struct Thresholds {
@@ -68,7 +77,6 @@ void from_json(const json& j, AffineSettings& a);
 
 void to_json(json& j, const Configuration& c);
 void from_json(const json& j, Configuration& c);
-
 
 // === LOGGER ===
 
