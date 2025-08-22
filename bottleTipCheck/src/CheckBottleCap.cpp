@@ -1,61 +1,59 @@
 ﻿
-
 #include "../include/checkBottleCap.h"
 #include "../include/paths.h"
 
-//double QualityChecker::getDepthFromPointCloud(const cv::Point2d& pt,
-//                              const rs2::points& pointcloud, double minD,
-//                              double oldmin) {
-//  int row = static_cast<int>(pt.y / (minD / oldmin));
-//  int col = static_cast<int>(pt.x / (minD / oldmin));
-//
-//  int idx = col + row * pointcloud.width;
-//  float z = pointcloud[idx].z;
-//
-//  if (!std::isnan(z)) {
-//    return z;
-//  }
-//
-//  // if it is NaN, I look for valid pixel in the neigborhood
-//  int min_dist_row = INT_MAX;
-//  int min_dist_col = INT_MAX;
-//
-//  int i = 1;
-//  while (row + i < pointcloud.height &&
-//         std::isnan(pointcloud[(row + i) * pointcloud.width + col].z))
-//    ++i;
-//  if (row + i < pointcloud.height) min_dist_row = i;
-//
-//  i = 1;
-//  while (row - i >= 0 &&
-//         std::isnan(pointcloud[(row - i) * pointcloud.width + col].z))
-//    ++i;
-//  if (row - i >= 0 && i < min_dist_row) min_dist_row = -i;
-//
-//  int j = 1;
-//  while (col + j < pointcloud.width &&
-//         std::isnan(pointcloud[row * pointcloud.width + col + j].z))
-//    ++j;
-//  if (col + j < pointcloud.width) min_dist_col = j;
-//
-//  j = 1;
-//  while (col - j >= 0 &&
-//         std::isnan(pointcloud[row * pointcloud.width + col - j].z))
-//    ++j;
-//  if (col - j >= 0 && j < abs(min_dist_col)) min_dist_col = -j;
-//
-//  if (abs(min_dist_row) < abs(min_dist_col)) {
-//    return pointcloud[(row + min_dist_row) * pointcloud.width + col].z;
-//  } else {
-//    return pointcloud[row * pointcloud.width + col + min_dist_col].z;
-//  }
-//}
+
+ double QualityChecker::getDepthFromPointCloud(const cv::Point2d& pt,
+                                              const Pointcloud::Ptr & pointcloud,
+                                              double minD, double oldmin) {
+   int row = static_cast<int>(pt.y / (minD / oldmin));
+   int col = static_cast<int>(pt.x / (minD / oldmin));
+
+   int idx = col + row * pointcloud->width;
+   float z = pointcloud->at(idx).z;
+
+   if (!std::isnan(z)) {
+     return z;
+   }
+
+   // if it is NaN, I look for valid pixel in the neigborhood
+   int min_dist_row = INT_MAX;
+   int min_dist_col = INT_MAX;
+
+   int i = 1;
+   while (row + i < pointcloud->height &&
+          std::isnan(pointcloud->at((row + i) * pointcloud->width + col).z))
+     ++i;
+   if (row + i < pointcloud->height) min_dist_row = i;
+
+   i = 1;
+   while (row - i >= 0 &&
+          std::isnan(pointcloud->at((row - i) * pointcloud->width + col).z))
+     ++i;
+   if (row - i >= 0 && i < min_dist_row) min_dist_row = -i;
+
+   int j = 1;
+   while (col + j < pointcloud->width &&
+          std::isnan(pointcloud->at(row * pointcloud->width + col + j).z))
+     ++j;
+   if (col + j < pointcloud->width) min_dist_col = j;
+
+   j = 1;
+   while (col - j >= 0 &&
+          std::isnan(pointcloud->at(row * pointcloud->width + col - j).z))
+     ++j;
+   if (col - j >= 0 && j < abs(min_dist_col)) min_dist_col = -j;
+
+   if (abs(min_dist_row) < abs(min_dist_col)) {
+     return pointcloud->at((row + min_dist_row) * pointcloud->width + col).z;
+   } else {
+     return pointcloud->at(row * pointcloud->width + col + min_dist_col).z;
+   }
+ }
 
 cv::Point2d QualityChecker::computeOffsetInMeters(
-    const cv::Point2d& pt1, double z1,
-                                  const cv::Point2d& pt2, double z2, double fx,
-                                  double fy, double u0, double v0, double minD,
-                                  double oldmin) {
+    const cv::Point2d& pt1, double z1, const cv::Point2d& pt2, double z2,
+    double fx, double fy, double u0, double v0, double minD, double oldmin) {
   double x1_m = (pt1.x / (minD / oldmin) - u0 + 0.5) * z1 / fx;
   double y1_m = (pt1.y / (minD / oldmin) - v0 + 0.5) * z1 / fy;
 
@@ -360,8 +358,6 @@ void QualityChecker::checkLogo(AppState& state, IDetector& detector) {
   double y_top_center =
       y_center - (depth_kernel_img.rows / 2) * cos(best_angle / 180.f);
 
-  /////////////// continuare qui
-
   // Draw a rectangle around the package
   cv::rectangle(grey_current_scaled_img,
                 cv::Rect(cv::Point(x_center - depth_kernel_img.cols / 2,
@@ -371,34 +367,45 @@ void QualityChecker::checkLogo(AppState& state, IDetector& detector) {
                 cv::Scalar(255));
 
   // Calcola profondità punto centrale pacco
-  /* cv::Point2d center_pack(x_center, y_center);
-  double z_cap = getDepthFromPointCloud(center_pack, pointcloud, min_rgb_img,
+  cv::Point2d center_pack(x_center, y_center);
+  double z_center_pack = getDepthFromPointCloud(center_pack, pointcloud,
+                                              min_rgb_img,
                                         min_depth_img);
-  LOG4CXX_INFO(state.logger, "Profondità centro: " << z_cap);
+  LOG4CXX_INFO(state.logger, "center depth: " << z_center_pack);
+
+  // central point of the original logo (logo image coordinates) as vector 3×1 ready for homography
+  cv::Mat center_logo =
+      (cv::Mat_<double>(3, 1) << logo_reference_image.cols / 2,
+       logo_reference_image.rows / 2, 1.0);
+  // apply the homography found between logo and scene
+  cv::Mat center_logo_img = detector.getHomographyMatrix() * center_logo;
+  // normalize because H works in homogeneous coordinates
+  center_logo_img /= center_logo_img.at<double>(2, 0);
+  cv::Point2d center_logo_pt(center_logo_img.at<double>(0, 0),
+                          center_logo_img.at<double>(1, 0));  
 
   // Calcola profondita centro logo
-   cv::Point2d center_logo(center_logo_out.at<double>(0, 0),
-                          center_logo_out.at<double>(1, 0));
-  double zl_c = getDepthFromPointCloud(center_logo, pointcloud, min_rgb_img,
-                                       min_depth_img);
-  LOG4CXX_INFO(state.logger, "Profondità centro scritta: ");
+  double z_center_logo = getDepthFromPointCloud(center_logo_pt, pointcloud,
+                                                 min_rgb_img,
+                                      min_depth_img);
+ LOG4CXX_INFO(state.logger, "logo center depth: ");
 
-  // Calcola profondità tappo centrale
-  double z_top_cap = z_cap + state.config.camera.dz;
-  LOG4CXX_INFO(state.logger, "Profondità tappo centrale: ");
+ // Calcola profondità tappo centrale
+ double z_top_cap = z_center_pack + state.config.camera.dz;
+ LOG4CXX_INFO(state.logger, "central tip depth: ");
 
-  // Calcola offset
-  cv::Point2d center_cap(x_top_center, y_top_center);
-  cv::Point2d offset = computeOffsetInMeters(
-      center_logo, zl_c, center_cap, z_top_cap, state.config.camera.fx,
-      state.config.camera.fy, state.config.camera.u0, state.config.camera.v0,
-      min_rgb_img, min_depth_img);
+ // Calcola offset
+ cv::Point2d center_cap(x_top_center, y_top_center);
+ cv::Point2d offset = computeOffsetInMeters(
+     center_logo_pt, z_center_logo, center_cap, z_top_cap,
+     state.config.camera.fx,
+     state.config.camera.fy, state.config.camera.u0, state.config.camera.v0,
+     min_rgb_img, min_depth_img);
 
-  LOG4CXX_INFO(state.logger,
-               "offset tappo centrale - logo x in metri: " << offset.x);
-  LOG4CXX_INFO(state.logger,
-               "offset tappo centrale - logo y in metri: " << offset.y);
-  */
+ LOG4CXX_INFO(state.logger,
+              "central cap - logo x-offset (meters): " << offset.x);
+ LOG4CXX_INFO(state.logger,
+              "central cap - logo y-offset (meters): " << offset.y);
 
   return;
 }

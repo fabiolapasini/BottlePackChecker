@@ -35,9 +35,9 @@ typedef pcl::PointCloud<pcl::PointXYZRGBA> Pointcloud;
 namespace QualityChecker 
 {
 
-//double getDepthFromPointCloud(const cv::Point2d& pt,
-//                              const rs2::points& pointcloud, double minD,
-//                              double oldmin);
+double getDepthFromPointCloud(const cv::Point2d& pt,
+                              const Pointcloud::Ptr & pointcloud, double minD,
+                              double oldmin);
 
 cv::Point2d computeOffsetInMeters(const cv::Point2d& pt1, double z1,
                                 const cv::Point2d& pt2, double z2, double fx,

@@ -69,6 +69,8 @@ int main(int argc, char** argv) {
 		"  UseAffine: " << (state.config.affine.useAffine ? "true" : "false")
 	);
 
+  // TODO(Fabiola): here I can decide to based on a if else statemnt
+  // to init an other type of class that still has IDetector as superclass
   std::unique_ptr<IDetector> detector =
       std::make_unique<SurfDetector>(state.config.affine.useAffine);
 
