@@ -388,11 +388,11 @@ void QualityChecker::checkLogo(AppState& state, IDetector& detector) {
   double z_center_logo = getDepthFromPointCloud(center_logo_pt, pointcloud,
                                                  min_rgb_img,
                                       min_depth_img);
- LOG4CXX_INFO(state.logger, "logo center depth: ");
+  LOG4CXX_INFO(state.logger, "logo center depth: " << z_center_logo);
 
  // Calcola profondità tappo centrale
  double z_top_cap = z_center_pack + state.config.camera.dz;
- LOG4CXX_INFO(state.logger, "central tip depth: ");
+ LOG4CXX_INFO(state.logger, "central tip depth: " << z_top_cap);
 
  // Calcola offset
  cv::Point2d center_cap(x_top_center, y_top_center);
