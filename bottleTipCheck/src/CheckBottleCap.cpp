@@ -253,6 +253,10 @@ void QualityChecker::checkLogo(AppState& state, IDetector& detector) {
                            CV_32FC1, cv::Scalar(0));
   float min_depth_img = std::numeric_limits<float>::max();
   float max_depth_img = 0.0f;
+
+  // TODO(Fabiola): it is a good thing to create a loop: load an image and evaluate it
+  // then load automaticallya new image and do the same. Thre is no more the input image but a 
+  // an input folder to load images from. 
   loadAndProcessDepthImage(state.config.filesInfo.DepthName,
                            state.config.roi.start_r, state.config.roi.start_c,
                            state.config.roi.w_depth, state.config.roi.h_depth,
