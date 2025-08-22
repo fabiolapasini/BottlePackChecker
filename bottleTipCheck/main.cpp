@@ -70,7 +70,8 @@ int main(int argc, char** argv) {
 	);
 
   // TODO(Fabiola): here I can decide to based on a if else statemnt
-  // to init an other type of class that still has IDetector as superclass
+  // to init an other type of class that still has IDetector as superclass:
+  // it is possible to used an AI based detector for obj detection
   std::unique_ptr<IDetector> detector =
       std::make_unique<SurfDetector>(state.config.affine.useAffine);
 
